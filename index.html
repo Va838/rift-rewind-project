@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riot Legends</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-crown"></i>
+                <span>RIOT LEGENDS</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#home">Home</a>
+                <a href="#champions">Champions</a>
+                <a href="#quiz">Quiz</a>
+                <a href="#game">Game</a>
+            </div>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <select class="lang-select" onchange="changeLanguage(this.value)">
+                    <option value="en">🇺🇸 EN</option>
+                    <option value="te">🇮🇳 TE</option>
+                    <option value="hi">🇮🇳 HI</option>
+                    <option value="ja">🇯🇵 JA</option>
+                    <option value="ko">🇰🇷 KO</option>
+                    <option value="es">🇪🇸 ES</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">ENTER THE RIFT</h1>
+            <p class="hero-subtitle">Master the Legends, Conquer the Battlefield</p>
+            <button class="cta-button" onclick="openGame()">START YOUR JOURNEY</button>
+        </div>
+        <div class="hero-champion">
+            <img id="heroImage" src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg" alt="Champion">
+        </div>
+    </section>
+
+    <!-- Champions Section -->
+    <section id="champions" class="section">
+        <div class="container">
+            <h2 class="section-title">CHOOSE YOUR CHAMPION</h2>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterChampions('all')">All</button>
+                <button class="filter-btn" onclick="filterChampions('assassin')">Assassin</button>
+                <button class="filter-btn" onclick="filterChampions('mage')">Mage</button>
+                <button class="filter-btn" onclick="filterChampions('tank')">Tank</button>
+                <button class="filter-btn" onclick="filterChampions('support')">Support</button>
+            </div>
+            <div id="championsGrid" class="champions-grid"></div>
+        </div>
+    </section>
+
+    <!-- Quiz Section -->
+    <section id="quiz" class="section">
+        <div class="container">
+            <h2 class="section-title">CHAMPION KNOWLEDGE QUIZ</h2>
+            <div class="quiz-container">
+                <div id="quizQuestion" class="quiz-question"></div>
+                <div id="quizOptions" class="quiz-options"></div>
+                <div id="quizScore" class="quiz-score">Score: 0/0</div>
+                <button id="startQuiz" class="quiz-btn" onclick="startQuiz()">Start Quiz</button>
+                <button id="nextQuestion" class="quiz-btn" onclick="nextQuestion()" style="display:none">Next</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Game Section -->
+    <section id="game" class="section">
+        <div class="container">
+            <h2 class="section-title">CHAMPION MEMORY MATCH</h2>
+            <div class="game-info">
+                <h3>Memory Challenge!</h3>
+                <p>Match champion pairs to test your memory and knowledge.</p>
+                <button class="play-btn" onclick="openGame()">🎮 PLAY NOW</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-crown"></i>
+                    <span>RIOT LEGENDS</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGame()">&times;</span>
+            <h2>Champion Memory Match</h2>
+            <div id="memoryGame" class="memory-game">
+                <div class="game-info">
+                    <div>Score: <span id="gameScore">0</span></div>
+                    <div>Moves: <span id="moves">0</span></div>
+                    <div>Time: <span id="timer">0</span>s</div>
+                </div>
+                <div id="gameGrid" class="game-grid"></div>
+            </div>
+            <div class="game-controls">
+                <button id="startGame" onclick="startMemoryGame()">Start Game</button>
+            </div>
+            <p>Match champion pairs to win!</p>
+        </div>
+    </div>
+
+    <!-- Champion Modal -->
+    <div id="championModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeChampionModal()">&times;</span>
+            <div id="championDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple working JavaScript
+        let currentLanguage = 'en';
+        let currentTheme = 'dark';
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let gameRunning = false;
+        let gameScore = 0;
+        let canvas, ctx, player, projectiles, gameLoop;
+
+        // Complete Translations for ALL content
+        const translations = {
+            en: {
+                // Navigation
+                navHome: "Home",
+                navChampions: "Champions", 
+                navQuiz: "Quiz",
+                navGame: "Game",
+                navNews: "News",
+                
+                // Hero Section
+                heroTitle: "ENTER THE RIFT",
+                heroSubtitle: "Master the Legends, Conquer the Battlefield",
+                heroCta: "START YOUR JOURNEY",
+                
+                // Champions Section
+                championsTitle: "CHOOSE YOUR CHAMPION",
+                filterAll: "All",
+                filterAssassin: "Assassin",
+                filterMage: "Mage",
+                filterTank: "Tank",
+                filterSupport: "Support",
+                
+                // Quiz Section
+                quizTitle: "CHAMPION KNOWLEDGE QUIZ",
+                quizScore: "Score:",
+                quizStart: "Start Quiz",
+                quizNext: "Next",
+                quizComplete: "Quiz Complete!",
+                quizFinalScore: "Your final score:",
+                quizRestart: "Restart Quiz",
+                
+                // Game Section
+                gameTitle: "CHAMPION MEMORY MATCH",
+                gameSubtitle: "Memory Challenge!",
+                gameDescription: "Match champion pairs to test your memory and knowledge.",
+                gamePlay: "🎮 PLAY NOW",
+                gameModalTitle: "Champion Memory Match",
+                gameStart: "Start Game",
+                gameRunning: "Game Running...",
+                gameInstructions: "Match champion pairs to win!",
+                gameOver: "Game Over! Final Score:",
+                
+                // News Section
+                newsTitle: "LATEST UPDATES",
+                
+                // Champion Details
+                championRole: "Role:",
+                championDescription: "Description:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "Which champion is known as 'The Unforgiven'?",
+                        options: ["Yasuo", "Zed", "Talon", "Katarina"]
+                    },
+                    {
+                        question: "What is Ahri's ultimate ability called?",
+                        options: ["Charm", "Spirit Rush", "Fox-Fire", "Orb of Deception"]
+                    },
+                    {
+                        question: "Which region is Garen from?",
+                        options: ["Noxus", "Ionia", "Demacia", "Piltover"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "New Champion Revealed",
+                        excerpt: "Meet the latest addition to the Rift with unique abilities."
+                    },
+                    {
+                        title: "Worlds 2024 Championship",
+                        excerpt: "The most epic showdown in esports history begins."
+                    }
+                ]
+            },
+            te: {
+                // Navigation
+                navHome: "హోమ్",
+                navChampions: "చాంపియన్స్",
+                navQuiz: "క్విజ్",
+                navGame: "గేమ్",
+                navNews: "వార్తలు",
+                
+                // Hero Section
+                heroTitle: "రిఫ్ట్‌లోకి ప్రవేశించండి",
+                heroSubtitle: "లెజెండ్స్‌ను మాస్టర్ చేయండి, యుద్ధభూమిని జయించండి",
+                heroCta: "మీ ప్రయాణం ప్రారంభించండి",
+                
+                // Champions Section
+                championsTitle: "మీ చాంపియన్‌ను ఎంచుకోండి",
+                filterAll: "అన్నీ",
+                filterAssassin: "హంతకుడు",
+                filterMage: "మాంత్రికుడు",
+                filterTank: "ట్యాంక్",
+                filterSupport: "మద్దతు",
+                
+                // Quiz Section
+                quizTitle: "చాంపియన్ జ్ఞాన పరీక్ష",
+                quizScore: "స్కోర్:",
+                quizStart: "క్విజ్ ప్రారంభించండి",
+                quizNext: "తదుపరి",
+                quizComplete: "క్విజ్ పూర్తయింది!",
+                quizFinalScore: "మీ చివరి స్కోర్:",
+                quizRestart: "మళ్లీ ప్రయత్నించండి",
+                
+                // Game Section
+                gameTitle: "స్కిల్‌షాట్ డాడ్జ్ గేమ్",
+                gameSubtitle: "మీ రిఫ్లెక్స్‌లను పరీక్షించండి!",
+                gameDescription: "వచ్చే స్కిల్‌షాట్‌లను తప్పించండి మరియు వీలైనంత కాలం జీవించండి।",
+                gamePlay: "🎮 ఇప్పుడే ఆడండి",
+                gameModalTitle: "స్కిల్‌షాట్ డాడ్జ్",
+                gameStart: "గేమ్ ప్రారంభించండి",
+                gameRunning: "గేమ్ నడుస్తోంది...",
+                gameInstructions: "కదలడానికి మౌస్ లేదా WASD కీలను ఉపయోగించండి",
+                gameOver: "గేమ్ ముగిసింది! చివరి స్కోర్:",
+                
+                // News Section
+                newsTitle: "తాజా అప్‌డేట్‌లు",
+                
+                // Champion Details
+                championRole: "పాత్ర:",
+                championDescription: "వివరణ:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "ఏ చాంపియన్‌ను 'ది అన్‌ఫర్గివెన్' అని పిలుస్తారు?",
+                        options: ["యాసుయో", "జెడ్", "టాలోన్", "కటారినా"]
+                    },
+                    {
+                        question: "అహ్రి యొక్క అల్టిమేట్ అబిలిటీ పేరు ఏమిటి?",
+                        options: ["చార్మ్", "స్పిరిట్ రష్", "ఫాక్స్-ఫైర్", "ఆర్బ్ ఆఫ్ డిసెప్షన్"]
+                    },
+                    {
+                        question: "గారెన్ ఏ ప్రాంతానికి చెందినవాడు?",
+                        options: ["నాక్సస్", "అయోనియా", "డెమాసియా", "పిల్టోవర్"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "కొత్త చాంపియన్ వెల్లడి",
+                        excerpt: "ప్రత్యేక సామర్థ్యాలతో రిఫ్ట్‌కు కొత్త చేరిక."
+                    },
+                    {
+                        title: "వరల్డ్స్ 2024 ఛాంపియన్‌షిప్",
+                        excerpt: "ఈస్పోర్ట్స్ చరిత్రలో అత్యంత గొప్ప పోరాటం ప్రారంభం."
+                    }
+                ]
+            },
+            hi: {
+                // Navigation
+                navHome: "होम",
+                navChampions: "चैंपियन्स",
+                navQuiz: "क्विज़",
+                navGame: "गेम",
+                navNews: "समाचार",
+                
+                // Hero Section
+                heroTitle: "रिफ्ट में प्रवेश करें",
+                heroSubtitle: "लेजेंड्स को मास्टर करें, युद्धक्षेत्र को जीतें",
+                heroCta: "अपनी यात्रा शुरू करें",
+                
+                // Champions Section
+                championsTitle: "अपना चैंपियन चुनें",
+                filterAll: "सभी",
+                filterAssassin: "हत्यारा",
+                filterMage: "जादूगर",
+                filterTank: "टैंक",
+                filterSupport: "सहायता",
+                
+                // Quiz Section
+                quizTitle: "चैंपियन ज्ञान क्विज़",
+                quizScore: "स्कोर:",
+                quizStart: "क्विज़ शुरू करें",
+                quizNext: "अगला",
+                quizComplete: "क्विज़ पूरा!",
+                quizFinalScore: "आपका अंतिम स्कोर:",
+                quizRestart: "फिर से शुरू करें",
+                
+                // Game Section
+                gameTitle: "स्किलशॉट डॉज गेम",
+                gameSubtitle: "अपने रिफ्लेक्स का परीक्षण करें!",
+                gameDescription: "आने वाले स्किलशॉट्स से बचें और जितनी देर हो सके जीवित रहें।",
+                gamePlay: "🎮 अभी खेलें",
+                gameModalTitle: "चैंपियन मेमोरी मैच",
+                gameStart: "गेम शुरू करें",
+                gameRunning: "गेम चल रहा है...",
+                gameInstructions: "चलने के लिए माउस या WASD कीज़ का उपयोग करें",
+                gameOver: "गेम ओवर! अंतिम स्कोर:",
+                
+                // News Section
+                newsTitle: "नवीनतम अपडेट",
+                
+                // Champion Details
+                championRole: "भूमिका:",
+                championDescription: "विवरण:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "किस चैंपियन को 'द अनफॉरगिवन' कहा जाता है?",
+                        options: ["यासुओ", "जेड", "टैलन", "कैटरीना"]
+                    },
+                    {
+                        question: "अहरी की अल्टिमेट एबिलिटी का नाम क्या है?",
+                        options: ["चार्म", "स्पिरिट रश", "फॉक्स-फायर", "ऑर्ब ऑफ डिसेप्शन"]
+                    },
+                    {
+                        question: "गारेन किस क्षेत्र से है?",
+                        options: ["नॉक्सस", "आयोनिया", "डेमेसिया", "पिल्टओवर"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "नया चैंपियन का खुलासा",
+                        excerpt: "विशेष क्षमताओं के साथ रिफ्ट में नया जोड़।"
+                    },
+                    {
+                        title: "वर्ल्ड्स 2024 चैंपियनशिप",
+                        excerpt: "ईस्पोर्ट्स इतिहास की सबसे महान लड़ाई शुरू।"
+                    }
+                ]
+            },
+            ja: {
+                // Navigation
+                navHome: "ホーム",
+                navChampions: "チャンピオン",
+                navQuiz: "クイズ",
+                navGame: "ゲーム",
+                navNews: "ニュース",
+                
+                // Hero Section
+                heroTitle: "リフトに入る",
+                heroSubtitle: "レジェンドをマスターし、戦場を征服する",
+                heroCta: "旅を始める",
+                
+                // Champions Section
+                championsTitle: "チャンピオンを選ぶ",
+                filterAll: "すべて",
+                filterAssassin: "アサシン",
+                filterMage: "メイジ",
+                filterTank: "タンク",
+                filterSupport: "サポート",
+                
+                // Quiz Section
+                quizTitle: "チャンピオン知識クイズ",
+                quizScore: "スコア:",
+                quizStart: "クイズ開始",
+                quizNext: "次へ",
+                quizComplete: "クイズ完了！",
+                quizFinalScore: "最終スコア:",
+                quizRestart: "再開始",
+                
+                // Game Section
+                gameTitle: "スキルショット回避ゲーム",
+                gameSubtitle: "反射神経をテスト！",
+                gameDescription: "飛んでくるスキルショットを避けて、できるだけ長く生き残ろう。",
+                gamePlay: "🎮 今すぐプレイ",
+                gameModalTitle: "チャンピオンメモリーマッチ",
+                gameStart: "ゲーム開始",
+                gameRunning: "ゲーム実行中...",
+                gameInstructions: "移動にはマウスまたはWASDキーを使用",
+                gameOver: "ゲームオーバー！最終スコア:",
+                
+                // News Section
+                newsTitle: "最新アップデート",
+                
+                // Champion Details
+                championRole: "役割:",
+                championDescription: "説明:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "「許されざる者」として知られるチャンピオンは？",
+                        options: ["ヤスオ", "ゼド", "タロン", "カタリナ"]
+                    },
+                    {
+                        question: "アーリのウルトアビリティの名前は？",
+                        options: ["チャーム", "スピリットラッシュ", "フォックスファイア", "オーブオブディセプション"]
+                    },
+                    {
+                        question: "ガレンはどの地域出身？",
+                        options: ["ノクサス", "アイオニア", "デマーシア", "ピルトーヴァー"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "新チャンピオン発表",
+                        excerpt: "特別な能力を持つリフトへの新たな追加。"
+                    },
+                    {
+                        title: "ワールド2024チャンピオンシップ",
+                        excerpt: "eスポーツ史上最も壮大な戦いが始まる。"
+                    }
+                ]
+            },
+            ko: {
+                // Navigation
+                navHome: "홈",
+                navChampions: "챔피언",
+                navQuiz: "퀴즈",
+                navGame: "게임",
+                navNews: "뉴스",
+                
+                // Hero Section
+                heroTitle: "리프트에 입장하세요",
+                heroSubtitle: "레전드를 마스터하고 전장을 정복하세요",
+                heroCta: "여정을 시작하세요",
+                
+                // Champions Section
+                championsTitle: "챔피언을 선택하세요",
+                filterAll: "전체",
+                filterAssassin: "암살자",
+                filterMage: "마법사",
+                filterTank: "탱커",
+                filterSupport: "서포터",
+                
+                // Quiz Section
+                quizTitle: "챔피언 지식 퀴즈",
+                quizScore: "점수:",
+                quizStart: "퀴즈 시작",
+                quizNext: "다음",
+                quizComplete: "퀴즈 완료!",
+                quizFinalScore: "최종 점수:",
+                quizRestart: "다시 시작",
+                
+                // Game Section
+                gameTitle: "스킬샷 피하기 게임",
+                gameSubtitle: "반사신경을 테스트하세요!",
+                gameDescription: "날아오는 스킬샷을 피하고 최대한 오래 살아남으세요.",
+                gamePlay: "🎮 지금 플레이",
+                gameModalTitle: "스킬샷 피하기",
+                gameStart: "게임 시작",
+                gameRunning: "게임 실행 중...",
+                gameInstructions: "이동하려면 마우스나 WASD 키를 사용하세요",
+                gameOver: "게임 오버! 최종 점수:",
+                
+                // News Section
+                newsTitle: "최신 업데이트",
+                
+                // Champion Details
+                championRole: "역할:",
+                championDescription: "설명:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "어떤 챔피언이 '용서받지 못한 자'로 알려져 있나요?",
+                        options: ["야스오", "제드", "탈론", "카타리나"]
+                    },
+                    {
+                        question: "아리의 궁극기 이름은 무엇인가요?",
+                        options: ["매혹", "혼령 질주", "여우불", "현혹의 구슬"]
+                    },
+                    {
+                        question: "가렌은 어느 지역 출신인가요?",
+                        options: ["녹서스", "아이오니아", "데마시아", "필트오버"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "새로운 챔피언 공개",
+                        excerpt: "특별한 능력을 가진 리프트의 새로운 추가."
+                    },
+                    {
+                        title: "월드 2024 챔피언십",
+                        excerpt: "e스포츠 역사상 가장 장대한 대결이 시작됩니다."
+                    }
+                ]
+            },
+            es: {
+                // Navigation
+                navHome: "Inicio",
+                navChampions: "Campeones",
+                navQuiz: "Quiz",
+                navGame: "Juego",
+                navNews: "Noticias",
+                
+                // Hero Section
+                heroTitle: "ENTRA EN LA GRIETA",
+                heroSubtitle: "Domina las Leyendas, Conquista el Campo de Batalla",
+                heroCta: "COMIENZA TU VIAJE",
+                
+                // Champions Section
+                championsTitle: "ELIGE TU CAMPEÓN",
+                filterAll: "Todos",
+                filterAssassin: "Asesino",
+                filterMage: "Mago",
+                filterTank: "Tanque",
+                filterSupport: "Apoyo",
+                
+                // Quiz Section
+                quizTitle: "QUIZ DE CONOCIMIENTO DE CAMPEONES",
+                quizScore: "Puntuación:",
+                quizStart: "Iniciar Quiz",
+                quizNext: "Siguiente",
+                quizComplete: "¡Quiz Completado!",
+                quizFinalScore: "Tu puntuación final:",
+                quizRestart: "Reiniciar Quiz",
+                
+                // Game Section
+                gameTitle: "JUEGO DE ESQUIVAR HABILIDADES",
+                gameSubtitle: "¡Pon a Prueba tus Reflejos!",
+                gameDescription: "Esquiva las habilidades entrantes y sobrevive el mayor tiempo posible.",
+                gamePlay: "🎮 JUGAR AHORA",
+                gameModalTitle: "Esquivar Habilidades",
+                gameStart: "Iniciar Juego",
+                gameRunning: "Juego en Ejecución...",
+                gameInstructions: "Usa el ratón o las teclas WASD para moverte",
+                gameOver: "¡Juego Terminado! Puntuación Final:",
+                
+                // News Section
+                newsTitle: "ÚLTIMAS ACTUALIZACIONES",
+                
+                // Champion Details
+                championRole: "Rol:",
+                championDescription: "Descripción:",
+                
+                // Quiz Questions
+                questions: [
+                    {
+                        question: "¿Qué campeón es conocido como 'El Imperdonable'?",
+                        options: ["Yasuo", "Zed", "Talon", "Katarina"]
+                    },
+                    {
+                        question: "¿Cómo se llama la habilidad definitiva de Ahri?",
+                        options: ["Encanto", "Impulso Espiritual", "Fuego Zorro", "Orbe del Engaño"]
+                    },
+                    {
+                        question: "¿De qué región es Garen?",
+                        options: ["Noxus", "Ionia", "Demacia", "Piltover"]
+                    }
+                ],
+                
+                // News Items
+                news: [
+                    {
+                        title: "Nuevo Campeón Revelado",
+                        excerpt: "Conoce la última incorporación a la Grieta con habilidades únicas."
+                    },
+                    {
+                        title: "Campeonato Mundial 2024",
+                        excerpt: "El enfrentamiento más épico en la historia de los esports comienza."
+                    }
+                ]
+            }
+        };
+
+        // Champions Data
+        const champions = [
+            {
+                id: 1,
+                name: "Yasuo",
+                role: "assassin",
+                image: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Yasuo_0.jpg",
+                description: "An Ionian of deep resolve, Yasuo is an agile swordsman who wields the air itself against his enemies."
+            },
+            {
+                id: 2,
+                name: "Ahri",
+                role: "mage",
+                image: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ahri_0.jpg",
+                description: "Innately connected to the latent power of Runeterra, Ahri is a vastaya who can reshape magic into orbs of raw energy."
+            },
+            {
+                id: 3,
+                name: "Garen",
+                role: "tank",
+                image: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Garen_0.jpg",
+                description: "A proud and noble warrior, Garen fights as one of the Dauntless Vanguard."
+            },
+            {
+                id: 4,
+                name: "Soraka",
+                role: "support",
+                image: "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Soraka_0.jpg",
+                description: "A healer gifted with the magic of the stars, Soraka holds the lives of her allies in her hands."
+            }
+        ];
+
+        // Quiz Questions - now uses translation data
+        const quizQuestions = [
+            { correct: 0 },
+            { correct: 1 },
+            { correct: 2 }
+        ];
+
+        // News Data - now uses translation data
+        const newsItems = [
+            { date: "2024-01-15", image: "https://picsum.photos/300/200?random=1" },
+            { date: "2024-01-10", image: "https://picsum.photos/300/200?random=2" }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChampions();
+            loadNews();
+            startHeroRotation();
+        });
+
+        // Language Functions
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            updateTranslations();
+        }
+
+        function updateTranslations() {
+            const t = translations[currentLanguage];
+            if (!t) return;
+            
+            // Update navigation
+            const navLinks = document.querySelectorAll('.nav-menu a');
+            navLinks[0].textContent = t.navHome;
+            navLinks[1].textContent = t.navChampions;
+            navLinks[2].textContent = t.navQuiz;
+            navLinks[3].textContent = t.navGame;
+            navLinks[4].textContent = t.navNews;
+            
+            // Update hero section
+            document.querySelector('.hero-title').textContent = t.heroTitle;
+            document.querySelector('.hero-subtitle').textContent = t.heroSubtitle;
+            document.querySelector('.cta-button').textContent = t.heroCta;
+            
+            // Update section titles
+            const sectionTitles = document.querySelectorAll('.section-title');
+            sectionTitles[0].textContent = t.championsTitle;
+            sectionTitles[1].textContent = t.quizTitle;
+            sectionTitles[2].textContent = t.gameTitle;
+            sectionTitles[3].textContent = t.newsTitle;
+            
+            // Update filter buttons
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns[0].textContent = t.filterAll;
+            filterBtns[1].textContent = t.filterAssassin;
+            filterBtns[2].textContent = t.filterMage;
+            filterBtns[3].textContent = t.filterTank;
+            filterBtns[4].textContent = t.filterSupport;
+            
+            // Update quiz elements
+            const quizScore = document.getElementById('quizScore');
+            if (quizScore) quizScore.textContent = t.quizScore + ' 0/0';
+            
+            const startQuizBtn = document.getElementById('startQuiz');
+            if (startQuizBtn && startQuizBtn.textContent !== t.quizRestart) {
+                startQuizBtn.textContent = t.quizStart;
+            }
+            
+            const nextBtn = document.getElementById('nextQuestion');
+            if (nextBtn) nextBtn.textContent = t.quizNext;
+            
+            // Update game section
+            const gameSubtitle = document.querySelector('.game-info h3');
+            const gameDescription = document.querySelector('.game-info p');
+            const playBtn = document.querySelector('.play-btn');
+            
+            if (gameSubtitle) gameSubtitle.textContent = t.gameSubtitle;
+            if (gameDescription) gameDescription.textContent = t.gameDescription;
+            if (playBtn) playBtn.textContent = t.gamePlay;
+            
+            // Update game modal
+            const gameModalTitle = document.querySelector('#gameModal h2');
+            const gameStartBtn = document.getElementById('startGame');
+            const gameInstructions = document.querySelector('#gameModal p');
+            
+            if (gameModalTitle) gameModalTitle.textContent = t.gameModalTitle;
+            if (gameStartBtn && !gameRunning) gameStartBtn.textContent = t.gameStart;
+            if (gameInstructions) gameInstructions.textContent = t.gameInstructions;
+            
+            // Reload dynamic content
+            loadNews();
+        }
+
+        // Theme Functions
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            document.querySelector('.theme-toggle').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+        }
+
+        // Champion Functions
+        function loadChampions() {
+            const grid = document.getElementById('championsGrid');
+            grid.innerHTML = '';
+            
+            champions.forEach(champion => {
+                const card = document.createElement('div');
+                card.className = 'champion-card';
+                card.dataset.role = champion.role;
+                card.onclick = () => showChampionDetails(champion);
+                
+                card.innerHTML = `
+                    <img src="${champion.image}" alt="${champion.name}" class="champion-image">
+                    <div class="champion-info">
+                        <h3 class="champion-name">${champion.name}</h3>
+                        <p class="champion-role">${champion.role.toUpperCase()}</p>
+                        <p class="champion-description">${champion.description}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function filterChampions(role) {
+            const cards = document.querySelectorAll('.champion-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                if (role === 'all' || card.dataset.role === role) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function showChampionDetails(champion) {
+            const modal = document.getElementById('championModal');
+            const details = document.getElementById('championDetails');
+            
+            details.innerHTML = `
+                <h2>${champion.name}</h2>
+                <img src="${champion.image}" alt="${champion.name}" style="width: 200px; height: 300px; object-fit: cover; border-radius: 10px; margin: 1rem 0;">
+                <p><strong>Role:</strong> ${champion.role.toUpperCase()}</p>
+                <p><strong>Description:</strong> ${champion.description}</p>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeChampionModal() {
+            document.getElementById('championModal').style.display = 'none';
+        }
+
+        // Hero Rotation
+        function startHeroRotation() {
+            const heroImage = document.getElementById('heroImage');
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % champions.length;
+                heroImage.src = champions[currentIndex].image;
+            }, 5000);
+        }
+
+        // Quiz Functions
+        function startQuiz() {
+            quizData = [...quizQuestions];
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById('startQuiz').style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= quizData.length) {
+                showQuizResults();
+                return;
+            }
+            
+            const t = translations[currentLanguage];
+            const question = t.questions[currentQuestionIndex];
+            
+            document.getElementById('quizQuestion').textContent = question.question;
+            document.getElementById('quizScore').textContent = `${t.quizScore} ${score}/${currentQuestionIndex}`;
+            
+            const optionsEl = document.getElementById('quizOptions');
+            optionsEl.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = quizData[currentQuestionIndex];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex && index !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+                option.disabled = true;
+            });
+            
+            if (selectedIndex === question.correct) {
+                score++;
+            }
+            
+            const nextBtn = document.getElementById('nextQuestion');
+            nextBtn.style.display = 'inline-block';
+            nextBtn.textContent = translations[currentLanguage].quizNext;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            document.getElementById('nextQuestion').style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuizResults() {
+            const t = translations[currentLanguage];
+            document.getElementById('quizQuestion').textContent = t.quizComplete;
+            document.getElementById('quizOptions').innerHTML = `<p>${t.quizFinalScore} ${score}/${quizData.length}</p>`;
+            document.getElementById('quizScore').textContent = `${t.quizScore} ${score}/${quizData.length}`;
+            
+            const startBtn = document.getElementById('startQuiz');
+            startBtn.style.display = 'inline-block';
+            startBtn.textContent = t.quizRestart;
+        }
+
+        // News Functions
+        function loadNews() {
+            const grid = document.getElementById('newsGrid');
+            grid.innerHTML = '';
+            
+            newsItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'news-item';
+                
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.title}" class="news-image">
+                    <div class="news-content">
+                        <h3 class="news-title">${item.title}</h3>
+                        <p class="news-date">${new Date(item.date).toLocaleDateString()}</p>
+                        <p class="news-excerpt">${item.excerpt}</p>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Game Functions
+        function openGame() {
+            document.getElementById('gameModal').style.display = 'block';
+            initGame();
+        }
+
+        function closeGame() {
+            document.getElementById('gameModal').style.display = 'none';
+            if (gameLoop) {
+                clearInterval(gameLoop);
+                gameRunning = false;
+            }
+        }
+
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            player = { x: 50, y: canvas.height / 2, width: 20, height: 20, speed: 5 };
+            projectiles = [];
+            gameScore = 0;
+            gameRunning = false;
+            
+            canvas.addEventListener('mousemove', (e) => {
+                if (!gameRunning) return;
+                const rect = canvas.getBoundingClientRect();
+                player.y = e.clientY - rect.top - player.height / 2;
+            });
+            
+            const keys = {};
+            document.addEventListener('keydown', (e) => keys[e.key] = true);
+            document.addEventListener('keyup', (e) => keys[e.key] = false);
+            
+            function gameUpdate() {
+                if (!gameRunning) return;
+                
+                // Player movement
+                if (keys['w'] || keys['W'] || keys['ArrowUp']) {
+                    player.y = Math.max(0, player.y - player.speed);
+                }
+                if (keys['s'] || keys['S'] || keys['ArrowDown']) {
+                    player.y = Math.min(canvas.height - player.height, player.y + player.speed);
+                }
+                
+                // Spawn projectiles
+                if (Math.random() < 0.02) {
+                    projectiles.push({
+                        x: canvas.width,
+                        y: Math.random() * canvas.height,
+                        width: 10,
+                        height: 10,
+                        speed: 3
+                    });
+                }
+                
+                // Update projectiles
+                projectiles.forEach((proj, index) => {
+                    proj.x -= proj.speed;
+                    
+                    if (proj.x + proj.width < 0) {
+                        projectiles.splice(index, 1);
+                        gameScore += 10;
+                    }
+                    
+                    // Collision
+                    if (proj.x < player.x + player.width &&
+                        proj.x + proj.width > player.x &&
+                        proj.y < player.y + player.height &&
+                        proj.y + proj.height > player.y) {
+                        gameOver();
+                    }
+                });
+                
+                // Draw
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#c89b3c';
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                ctx.fillStyle = '#ff6b6b';
+                projectiles.forEach(proj => {
+                    ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
+                });
+                
+                document.getElementById('gameScore').textContent = `Score: ${gameScore}`;
+            }
+            
+            gameLoop = setInterval(gameUpdate, 16);
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            gameRunning = true;
+            gameScore = 0;
+            projectiles = [];
+            player.x = 50;
+            player.y = canvas.height / 2;
+            
+            const t = translations[currentLanguage];
+            document.getElementById('startGame').textContent = t.gameRunning;
+            document.getElementById('startGame').disabled = true;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            const t = translations[currentLanguage];
+            document.getElementById('startGame').textContent = t.gameStart;
+            document.getElementById('startGame').disabled = false;
+            alert(`${t.gameOver} ${gameScore}`);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const gameModal = document.getElementById('gameModal');
+            const championModal = document.getElementById('championModal');
+            
+            if (event.target === gameModal) closeGame();
+            if (event.target === championModal) closeChampionModal();
+        };
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+    
+    <script>
+    // CHAMPION MEMORY MATCH GAME
+    let gameActive = false;
+    let gameScore = 0;
+    let moves = 0;
+    let timer = 0;
+    let gameTimer = null;
+    let flippedCards = [];
+    let matchedPairs = 0;
+    
+    const champions = [
+        'Ahri', 'Yasuo', 'Jinx', 'Zed', 'Lux', 'Garen', 'Katarina', 'Ezreal'
+    ];
+
+    function openGame() {
+        document.getElementById('gameModal').style.display = 'block';
+    }
+
+    function closeGame() {
+        document.getElementById('gameModal').style.display = 'none';
+        if (gameTimer) {
+            clearInterval(gameTimer);
+            gameActive = false;
+        }
+    }
+
+    function startMemoryGame() {
+        if (gameActive) return;
+        
+        gameActive = true;
+        gameScore = 0;
+        moves = 0;
+        timer = 0;
+        matchedPairs = 0;
+        flippedCards = [];
+        
+        const btn = document.getElementById('startGame');
+        btn.textContent = 'Playing...';
+        btn.disabled = true;
+        
+        // Create card pairs
+        const cards = [...champions, ...champions].sort(() => Math.random() - 0.5);
+        
+        // Create game grid
+        const grid = document.getElementById('gameGrid');
+        grid.innerHTML = '';
+        
+        cards.forEach((champion, index) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.champion = champion;
+            card.dataset.index = index;
+            card.textContent = '?';
+            card.onclick = () => flipCard(card);
+            grid.appendChild(card);
+        });
+        
+        // Start timer
+        gameTimer = setInterval(() => {
+            timer++;
+            document.getElementById('timer').textContent = timer;
+        }, 1000);
+        
+        updateDisplay();
+    }
+    
+    function flipCard(card) {
+        if (!gameActive || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+        
+        card.classList.add('flipped');
+        card.textContent = card.dataset.champion;
+        flippedCards.push(card);
+        
+        if (flippedCards.length === 2) {
+            moves++;
+            document.getElementById('moves').textContent = moves;
+            
+            setTimeout(() => {
+                checkMatch();
+            }, 1000);
+        }
+    }
+    
+    function checkMatch() {
+        const [card1, card2] = flippedCards;
+        
+        if (card1.dataset.champion === card2.dataset.champion) {
+            // Match found
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+            matchedPairs++;
+            gameScore += 100;
+            
+            if (matchedPairs === champions.length) {
+                // Game won
+                endGame(true);
+            }
+        } else {
+            // No match
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            card1.textContent = '?';
+            card2.textContent = '?';
+        }
+        
+        flippedCards = [];
+        updateDisplay();
+    }
+    
+    function endGame(won) {
+        gameActive = false;
+        clearInterval(gameTimer);
+        
+        const btn = document.getElementById('startGame');
+        btn.textContent = 'Start Game';
+        btn.disabled = false;
+        
+        if (won) {
+            const bonus = Math.max(0, 300 - timer * 2);
+            gameScore += bonus;
+            alert(`Congratulations! You won!\nScore: ${gameScore}\nTime: ${timer}s\nMoves: ${moves}`);
+        }
+        
+        updateDisplay();
+    }
+    
+    function updateDisplay() {
+        document.getElementById('gameScore').textContent = gameScore;
+        document.getElementById('moves').textContent = moves;
+        document.getElementById('timer').textContent = timer;
+    }
+
+    function changeLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        
+        // NAVIGATION
+        const nav = document.querySelectorAll('.nav-links a');
+        if (nav[0]) nav[0].textContent = t.navHome;
+        if (nav[1]) nav[1].textContent = t.navChampions;
+        if (nav[2]) nav[2].textContent = t.navQuiz;
+        if (nav[3]) nav[3].textContent = t.navGame;
+        
+        // HERO SECTION
+        const hero1 = document.querySelector('.hero-title');
+        const hero2 = document.querySelector('.hero-subtitle');
+        if (hero1) hero1.textContent = t.heroTitle;
+        if (hero2) hero2.textContent = t.heroSubtitle;
+        
+        // SECTION TITLES
+        const sections = document.querySelectorAll('.section-title');
+        if (sections[0]) sections[0].textContent = t.championsTitle;
+        if (sections[1]) sections[1].textContent = t.quizTitle;
+        if (sections[2]) sections[2].textContent = t.gameTitle;
+        
+        // CHAMPIONS SECTION
+        const filters = document.querySelectorAll('.filter-btn');
+        if (filters[0]) filters[0].textContent = t.filterAll;
+        if (filters[1]) filters[1].textContent = t.filterAssassin;
+        if (filters[2]) filters[2].textContent = t.filterMage;
+        if (filters[3]) filters[3].textContent = t.filterTank;
+        if (filters[4]) filters[4].textContent = t.filterSupport;
+        
+        // QUIZ SECTION
+        const quiz1 = document.querySelector('#quiz h3');
+        const quiz2 = document.querySelector('#quiz p');
+        const quiz3 = document.querySelector('#quiz .quiz-btn');
+        if (quiz1) quiz1.textContent = t.quizSubtitle;
+        if (quiz2) quiz2.textContent = t.quizDescription;
+        if (quiz3) quiz3.textContent = t.quizStart;
+        
+        // GAME SECTION
+        const game1 = document.querySelector('#game h3');
+        const game2 = document.querySelector('#game p');
+        const game3 = document.querySelector('#game .play-btn');
+        if (game1) game1.textContent = t.gameSubtitle;
+        if (game2) game2.textContent = t.gameDescription;
+        if (game3) game3.textContent = t.gamePlay;
+        
+        // GAME MODAL
+        const modal1 = document.querySelector('#gameModal h2');
+        const modal2 = document.querySelector('#gameModal p');
+        const modal3 = document.getElementById('startGame');
+        if (modal1) modal1.textContent = t.gameModalTitle;
+        if (modal2) modal2.textContent = t.gameInstructions;
+        if (modal3 && !gameActive) modal3.textContent = t.gameStart;
+        
+        // QUIZ MODAL (if exists)
+        const quizModal = document.querySelector('#quizModal h2');
+        if (quizModal) quizModal.textContent = t.quizModalTitle;
+        
+        // CHAMPION MODAL (if exists)
+        const champModal = document.querySelector('#championModal .modal-title');
+        if (champModal) champModal.textContent = t.championDetails;
+        
+        // FOOTER
+        const footer = document.querySelector('.footer p');
+        if (footer) footer.textContent = t.footerText;
+        
+        // BUTTONS
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            if (btn.textContent.includes('Start') && !btn.disabled) btn.textContent = t.gameStart;
+            if (btn.textContent.includes('Close')) btn.textContent = t.close;
+            if (btn.textContent.includes('Next')) btn.textContent = t.next;
+            if (btn.textContent.includes('Previous')) btn.textContent = t.previous;
+        });
+        
+        // THEME TOGGLE
+        const themeBtn = document.querySelector('.theme-toggle');
+        if (themeBtn) themeBtn.title = t.themeToggle;
+        
+        // LANGUAGE SELECTOR
+        const langSelect = document.querySelector('.lang-select');
+        if (langSelect) langSelect.title = t.languageSelect;
+        
+        // DOCUMENT TITLE
+        document.title = t.title;
+        
+        // META DESCRIPTION
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.content = t.metaDescription;
+        
+        // ANY REMAINING TEXT ELEMENTS
+        const allElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, div, label');
+        allElements.forEach(el => {
+            const text = el.textContent.trim();
+            if (text === 'Champions') el.textContent = t.championsTitle;
+            if (text === 'Quiz') el.textContent = t.quizTitle;
+            if (text === 'Game') el.textContent = t.gameTitle;
+            if (text === 'Home') el.textContent = t.navHome;
+            if (text === 'All') el.textContent = t.filterAll;
+            if (text === 'Assassin') el.textContent = t.filterAssassin;
+            if (text === 'Mage') el.textContent = t.filterMage;
+            if (text === 'Tank') el.textContent = t.filterTank;
+            if (text === 'Support') el.textContent = t.filterSupport;
+        });
+        
+        console.log('Complete multilingual update applied for:', lang);
+    }
+    </script>
+</body>
+</html>

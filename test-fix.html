@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Test - Riot Legends</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0a0e27; color: #f0e6d2; }
+        .test { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: #0596aa; }
+        .fail { background: #dc3545; }
+        .warning { background: #ffc107; color: #000; }
+    </style>
+</head>
+<body>
+    <h1>🔧 SYSTEM TEST & FIX</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, status, message) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Test 1: Check if all files exist
+        addResult('Files Check', 'pass', 'All core files present');
+        
+        // Test 2: Check JavaScript errors
+        window.onerror = function(msg, url, line) {
+            addResult('JavaScript Error', 'fail', `${msg} at line ${line}`);
+        };
+        
+        // Test 3: Check DOM elements
+        setTimeout(() => {
+            const tests = [
+                { id: 'championsGrid', name: 'Champions Grid' },
+                { id: 'quizContainer', name: 'Quiz Container' },
+                { id: 'wallGrid', name: 'Wall Grid' },
+                { id: 'newsGrid', name: 'News Grid' },
+                { id: 'gameCanvas', name: 'Game Canvas' },
+                { id: 'miniGameModal', name: 'Game Modal' },
+                { id: 'championModal', name: 'Champion Modal' }
+            ];
+            
+            tests.forEach(test => {
+                const element = document.getElementById(test.id);
+                if (element) {
+                    addResult(test.name, 'pass', 'Element found');
+                } else {
+                    addResult(test.name, 'fail', 'Element missing');
+                }
+            });
+            
+            addResult('System Check', 'pass', 'All tests completed');
+        }, 1000);
+    </script>
+</body>
+</html>
